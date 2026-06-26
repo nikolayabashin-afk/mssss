@@ -146,8 +146,8 @@ button, a { cursor: pointer; }
 
 .scroll-animation {
   position: relative;
-  height: 430vh;
-  min-height: 3600px;
+  height: 340vh;
+  min-height: 3000px;
   overflow: visible;
   background: var(--navy-950);
   color: var(--white);
@@ -422,7 +422,7 @@ th { background: var(--navy-850); color: var(--white); font-size: 12px; text-tra
   .service-tabs, .service-copy { padding-left: 22px; padding-right: 22px; }
   .footer-columns { grid-template-columns: 1fr; }
   .case-body dl div { grid-template-columns: 1fr; }
-  .scroll-animation { height: 360vh; min-height: 2500px; }
+  .scroll-animation { height: 300vh; min-height: 2100px; }
   .scroll-animation-copy { bottom: 72px; }
   .scroll-animation-copy h1 { font-size: clamp(42px, 11vw, 68px); }
 }

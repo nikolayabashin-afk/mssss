@@ -404,29 +404,44 @@
       scrollVideo.pause();
       scrollVideo.currentTime = 0;
       let ticking = false;
+      let scrubFrame = null;
+      let targetProgress = 0;
+      let currentProgress = 0;
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
       const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
-      const syncVideoToScroll = () => {
+      const renderScrub = () => {
+        scrubFrame = null;
+        if (!scrollSection || prefersReducedMotion.matches || !scrollVideo.duration) return;
+        currentProgress += (targetProgress - currentProgress) * 0.22;
+        if (Math.abs(targetProgress - currentProgress) < 0.002) currentProgress = targetProgress;
+        scrollSection.classList.toggle('is-playing', currentProgress > 0.02);
+        scrollSection.style.setProperty('--scroll-progress', currentProgress.toFixed(3));
+        const nextTime = scrollVideo.duration * currentProgress;
+        if (Math.abs(scrollVideo.currentTime - nextTime) > 0.012) scrollVideo.currentTime = nextTime;
+        if (currentProgress !== targetProgress) scrubFrame = requestAnimationFrame(renderScrub);
+      };
+      const requestScrub = () => {
+        if (scrubFrame == null) scrubFrame = requestAnimationFrame(renderScrub);
+      };
+      const updateScrollTarget = () => {
         ticking = false;
         if (!scrollSection || prefersReducedMotion.matches || !scrollVideo.duration) return;
         const headerHeight = document.querySelector('[data-header]')?.offsetHeight || 0;
         const start = scrollSection.offsetTop - headerHeight;
         const end = scrollSection.offsetTop + scrollSection.offsetHeight - window.innerHeight;
-        const progress = clamp((window.scrollY - start) / Math.max(end - start, 1), 0, 1);
-        scrollSection.classList.toggle('is-playing', progress > 0.02);
-        scrollSection.style.setProperty('--scroll-progress', progress.toFixed(3));
-        scrollVideo.currentTime = scrollVideo.duration * progress;
+        targetProgress = clamp((window.scrollY - start) / Math.max(end - start, 1), 0, 1);
+        requestScrub();
       };
       const requestSync = () => {
         if (!ticking) {
           ticking = true;
-          requestAnimationFrame(syncVideoToScroll);
+          requestAnimationFrame(updateScrollTarget);
         }
       };
-      scrollVideo.addEventListener('loadedmetadata', syncVideoToScroll, { once: true });
+      scrollVideo.addEventListener('loadedmetadata', updateScrollTarget, { once: true });
       window.addEventListener('scroll', requestSync, { passive: true });
       window.addEventListener('resize', requestSync);
-      syncVideoToScroll();
+      updateScrollTarget();
     }
 
     if (location.hash) setTimeout(() => document.querySelector(location.hash)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
