@@ -99,6 +99,27 @@
     `;
   }
 
+  function topScrollAnimation() {
+    return `
+      <section class="scroll-animation" aria-label="Minerals Spectrum Survey animation">
+        <div class="scroll-animation-frame">
+          <video data-scroll-video muted playsinline preload="auto" poster="${SITE_DATA.images.fallback}">
+            <source src="assets/top-scroll-animation.mp4" type="video/mp4">
+          </video>
+          <div class="scroll-animation-shade"></div>
+          <div class="scroll-animation-copy">
+            <p class="eyebrow">${esc(lang === 'ru' ? 'Minerals Spectrum Survey' : 'Minerals Spectrum Survey')}</p>
+            <h1>${esc(lang === 'ru' ? 'Видеть глубже до начала работ' : 'See beneath the surface before the first cut')}</h1>
+            <p>${esc(lang === 'ru' ? 'Передовые технологии дистанционного зондирования помогают снижать риски, сроки и стоимость геологоразведки.' : 'Advanced remote sensing turns hidden geological uncertainty into faster, cleaner and more confident exploration decisions.')}</p>
+          </div>
+          <div class="scroll-animation-cue" aria-hidden="true">
+            <span></span>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
   function sectionHeader(kicker, title, subtitle, extra = '') {
     return `<div class="section-header reveal">${kicker ? `<p class="section-kicker">${esc(t(kicker))}</p>` : ''}<h2>${esc(t(title))}</h2>${subtitle ? `<p>${esc(t(subtitle))}</p>` : ''}${extra}</div>`;
   }
@@ -145,6 +166,7 @@
   function renderHome() {
     const p = SITE_DATA.pages.home;
     return `
+      ${topScrollAnimation()}
       ${hero({ ...p.hero, imageKey: 'hero', primaryHref: 'services.html', secondaryHref: 'about.html', primaryText: p.hero.primary, secondaryText: p.hero.secondary })}
       <main>
         <section class="section light-section">
@@ -375,6 +397,37 @@
       items.forEach(item => { if (item.isIntersecting) { item.target.classList.add('is-visible'); observer.unobserve(item.target); } });
     }, { threshold: 0.12 }) : null;
     document.querySelectorAll('.reveal').forEach(el => observer ? observer.observe(el) : el.classList.add('is-visible'));
+
+    const scrollVideo = document.querySelector('[data-scroll-video]');
+    if (scrollVideo) {
+      const scrollSection = scrollVideo.closest('.scroll-animation');
+      scrollVideo.pause();
+      scrollVideo.currentTime = 0;
+      let ticking = false;
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+      const syncVideoToScroll = () => {
+        ticking = false;
+        if (!scrollSection || prefersReducedMotion.matches || !scrollVideo.duration) return;
+        const headerHeight = document.querySelector('[data-header]')?.offsetHeight || 0;
+        const start = scrollSection.offsetTop - headerHeight;
+        const end = scrollSection.offsetTop + scrollSection.offsetHeight - window.innerHeight;
+        const progress = clamp((window.scrollY - start) / Math.max(end - start, 1), 0, 1);
+        scrollSection.classList.toggle('is-playing', progress > 0.02);
+        scrollSection.style.setProperty('--scroll-progress', progress.toFixed(3));
+        scrollVideo.currentTime = scrollVideo.duration * progress;
+      };
+      const requestSync = () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(syncVideoToScroll);
+        }
+      };
+      scrollVideo.addEventListener('loadedmetadata', syncVideoToScroll, { once: true });
+      window.addEventListener('scroll', requestSync, { passive: true });
+      window.addEventListener('resize', requestSync);
+      syncVideoToScroll();
+    }
 
     if (location.hash) setTimeout(() => document.querySelector(location.hash)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
   }

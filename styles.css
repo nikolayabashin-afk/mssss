@@ -144,6 +144,88 @@ button, a { cursor: pointer; }
 .search-results a:hover { border-color: var(--blue); box-shadow: 0 10px 30px rgba(21,93,255,.12); }
 .search-results span, .search-results small { color: var(--slate-500); }
 
+.scroll-animation {
+  position: relative;
+  height: 430vh;
+  min-height: 3600px;
+  overflow: visible;
+  background: var(--navy-950);
+  color: var(--white);
+  --scroll-progress: 0;
+}
+.scroll-animation-frame {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+.scroll-animation video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  opacity: .94;
+}
+.scroll-animation-shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(5,9,19,.58), rgba(5,9,19,.05) 38%, rgba(5,9,19,.74)),
+    linear-gradient(90deg, rgba(5,9,19,.82), rgba(5,9,19,.24) 46%, rgba(5,9,19,.42));
+}
+.scroll-animation-copy {
+  position: absolute;
+  left: clamp(20px, 6vw, 86px);
+  bottom: clamp(74px, 12vh, 140px);
+  z-index: 1;
+  width: min(780px, calc(100% - 40px));
+  transition: opacity .24s ease, transform .24s ease;
+  opacity: calc(1 - (var(--scroll-progress) * .28));
+  transform: translateY(calc(var(--scroll-progress) * -10px));
+}
+.scroll-animation-copy h1 {
+  margin: 0;
+  max-width: 800px;
+  font-family: "Space Grotesk", Inter, sans-serif;
+  font-size: clamp(46px, 7vw, 96px);
+  line-height: .98;
+  letter-spacing: -0.055em;
+}
+.scroll-animation-copy p:not(.eyebrow) {
+  max-width: 650px;
+  margin: 22px 0 0;
+  color: rgba(255,255,255,.78);
+  font-size: clamp(17px, 1.8vw, 21px);
+}
+.scroll-animation-cue {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  width: 28px;
+  height: 46px;
+  border: 1px solid rgba(255,255,255,.48);
+  transform: translateX(-50%);
+  opacity: .78;
+  transition: opacity .2s ease;
+}
+.scroll-animation-cue span {
+  position: absolute;
+  left: 50%;
+  top: 10px;
+  width: 4px;
+  height: 8px;
+  background: var(--electric);
+  transform: translateX(-50%);
+  animation: scrollCue 1.5s ease-in-out infinite;
+}
+.scroll-animation.is-playing .scroll-animation-cue { opacity: 0; }
+@keyframes scrollCue {
+  0% { transform: translate(-50%, 0); opacity: 0; }
+  35% { opacity: 1; }
+  100% { transform: translate(-50%, 16px); opacity: 0; }
+}
+
 .hero { position: relative; min-height: 560px; display: flex; align-items: center; overflow: hidden; color: var(--white); background: var(--navy-950); }
 .hero-large { min-height: calc(100vh - var(--header-height)); }
 .hero-bg, .hero-overlay, .hero-grid { position: absolute; inset: 0; }
@@ -340,8 +422,12 @@ th { background: var(--navy-850); color: var(--white); font-size: 12px; text-tra
   .service-tabs, .service-copy { padding-left: 22px; padding-right: 22px; }
   .footer-columns { grid-template-columns: 1fr; }
   .case-body dl div { grid-template-columns: 1fr; }
+  .scroll-animation { height: 360vh; min-height: 2500px; }
+  .scroll-animation-copy { bottom: 72px; }
+  .scroll-animation-copy h1 { font-size: clamp(42px, 11vw, 68px); }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
   .reveal { opacity: 1; transform: none; }
+  .scroll-animation-cue { display: none; }
 }
